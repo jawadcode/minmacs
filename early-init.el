@@ -7,7 +7,7 @@
       byte-compile-warnings nil
       inhibit-startup-screen t
       warning-minimum-level :error
-			gc-cons-threshold most-positive-fixnum)
+      gc-cons-threshold most-positive-fixnum)
 
 (tool-bar-mode -1)
 (scroll-bar-mode -1)

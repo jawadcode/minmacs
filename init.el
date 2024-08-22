@@ -27,28 +27,29 @@
                              :width 'normal
                              :slant 'normal))
 
-(window-divider-mode)
-
 (add-hook 'text-mode-hook #'display-line-numbers-mode)
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)
+
+(window-divider-mode)
+(global-hl-line-mode)
 
 ;; === INITIALISE STRAIGHT.EL ===
 
 (defvar bootstrap-version)
 (let ((bootstrap-file
-			 (expand-file-name
-				"straight/repos/straight.el/bootstrap.el"
-				(or (bound-and-true-p straight-base-dir)
-						user-emacs-directory)))
-			(bootstrap-version 7))
-	(unless (file-exists-p bootstrap-file)
-		(with-current-buffer
-				(url-retrieve-synchronously
-				 "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-				 'silent 'inhibit-cookies)
-			(goto-char (point-max))
-			(eval-print-last-sexp)))
-	(load bootstrap-file nil 'nomessage))
+       (expand-file-name
+        "straight/repos/straight.el/bootstrap.el"
+        (or (bound-and-true-p straight-base-dir)
+            user-emacs-directory)))
+      (bootstrap-version 7))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
 (setq use-package-always-ensure t)
 (straight-use-package 'use-package)
@@ -122,7 +123,9 @@
                                dashboard-insert-items))
   (dashboard-items '((recents . 10)
                      (projects . 10)))
-  :config (dashboard-setup-startup-hook))
+  :config
+  (setq-local centaur-tabs-mode -1)
+  (dashboard-setup-startup-hook))
 
 (use-package centaur-tabs
   :custom
@@ -133,13 +136,13 @@
   (centaur-tabs-change-fonts (face-attribute 'variable-pitch :font) 160)
   (centaur-tabs-mode 1)
   :hook (dashboard-mode . centaur-tabs-local-mode)
-	:bind ( :map centaur-tabs-mode-map
-					("<leader> t n" . centaur-tabs-forward)
-					("<leader> t p" . centaur-tabs-backward)))
+  :bind ( :map centaur-tabs-mode-map
+          ("<leader> t n" . centaur-tabs-forward)
+          ("<leader> t p" . centaur-tabs-backward)))
 
 (use-package solaire-mode
-	:config
-	(solaire-global-mode 1))
+  :config
+  (solaire-global-mode 1))
 
 ;; === KEY BINDINGS ===
 
@@ -149,8 +152,8 @@
 (keymap-global-set "C-<wheel-down>" #'text-scale-decrease)
 
 (defvar-keymap jawad/buffer-map
-	:doc "My buffer keymap"
-	"k" #'kill-buffer)
+  :doc "My buffer keymap"
+  "k" #'kill-buffer)
 
 (defvar-keymap jawad/window-map
   :doc "My window keymap"
@@ -172,7 +175,7 @@
   :doc "My file keymap"
   "f" #'consult-fd
   "r" #'consult-recent-file
-	"g" #'consult-ripgrep
+  "g" #'consult-ripgrep
   "c" #'open-configs)
 
 (defvar-keymap jawad/global-map
@@ -181,33 +184,33 @@
   "b" jawad/buffer-map
   "w" jawad/window-map
   "p" project-prefix-map
-	"h" help-map)
+  "h" help-map)
 
 (evil-define-key 'normal 'global (kbd "<leader>") jawad/global-map)
 
 ;; === MINIBUFFER CONFIGURATION ===
 
 (use-package vertico
-	:demand t
-	:custom
-	(vertico-cycle 1)
-	(vertico-resize nil)
+  :demand t
+  :custom
+  (vertico-cycle 1)
+  (vertico-resize nil)
   :config (vertico-mode 1)
   :bind ( :map vertico-map
           ("M-j" . vertico-next)
           ("M-k" . vertico-previous)))
 
 (use-package marginalia
-	:demand t
+  :demand t
   :config (marginalia-mode 1))
 
 (use-package orderless
-	:demand t
+  :demand t
   :config (setq completion-styles '(orderless basic)))
 
 (use-package consult
-	:demand t
-	:config (setq completion-in-region-function 'consult-completion-in-region))
+  :demand t
+  :config (setq completion-in-region-function 'consult-completion-in-region))
 
 ;; === SETTING UP THE PATH/ENVIRONMENT (WINDOWS ONLY) ===
 
@@ -219,7 +222,7 @@
 (setq config-dir (f-dirname
                   (file-truename
                    (f-join user-emacs-directory "init.el")))
-      env-file-path (f-join config-dir "env.el"))
+      env-file-path (f-join user-emacs-directory "env.el"))
 
 (defun gen-env-file ()
   (let ((dirname (file-name-directory env-file-path)))
@@ -255,20 +258,21 @@
 
 ;; === EDITOR CONFIGURATION ===
 
-(use-package tree-sitter-langs)
-
 (use-package tree-sitter
   :after tree-sitter-langs
   :config
   (require 'tree-sitter-langs)
   (global-tree-sitter-mode)
-  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
+  :delight)
+
+(use-package tree-sitter-langs)
 
 (setq default-directory (f-slash (getenv "HOME")))
 (setq backup-directory-alist `((".*" . ,temporary-file-directory)))
 (setq custom-file (f-join user-emacs-directory "custom.el"))
 
-(indent-tabs-mode -1)
+(setq-default indent-tabs-mode -1)
 (setq-default tab-width 4)
 (setq-default evil-shift-width 4)
 
@@ -326,8 +330,8 @@
 ;; === LSP & LANGUAGE CONFIGURATIONS ===
 
 (use-package eglot
+  :straight (:type built-in)
   :custom (eglot-report-progress t)
-  :ensure nil
   :hook ((python-mode . eglot-ensure))
   :config
   (when (eq system-type 'gnu/linux)
@@ -390,7 +394,7 @@
            :host github
            :repo "bustercopley/lean4-mode"
            :files ("*.el" "data"))
-	:hook (lean4-mode . eglot-ensure)
+  :hook (lean4-mode . eglot-ensure)
   :commands lean4-mode)
 
 (when (eq system-type 'gnu/linux)
