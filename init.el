@@ -29,6 +29,7 @@
 
 (add-hook 'text-mode-hook #'display-line-numbers-mode)
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)
+(add-hook 'image-mode-hook #'(lambda () (blink-cursor-mode -1)))
 
 (window-divider-mode)
 (global-hl-line-mode)
@@ -332,7 +333,11 @@
 (use-package eglot
   :straight (:type built-in)
   :custom (eglot-report-progress t)
-  :hook ((python-mode . eglot-ensure))
+  :hook (python-mode . eglot-ensure)
+	:bind ( :map eglot-mode-map
+					("<leader> e r" . eglot-rename)
+					("<leader> e f" . eglot-format)
+					("<leader> e c" . eglot-code-actions))
   :config
   (when (eq system-type 'gnu/linux)
     (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
@@ -341,8 +346,7 @@
 (use-package eldoc-box :hook (eldoc-mode . eldoc-box-hover-at-point-mode))
 
 (use-package rust-mode
-  :hook ((rust-mode . eglot-ensure)
-         (rust-mode . prettify-symbols-mode))
+  :hook (rust-mode . eglot-ensure)
   :commands rust-mode)
 
 (defun c/++-setup ()
