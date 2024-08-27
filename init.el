@@ -344,15 +344,13 @@
 (use-package eglot
   :straight (:type built-in)
   :custom (eglot-report-progress t)
-  :hook (python-mode . eglot-ensure)
+  :config (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
+  :hook ((python-mode . eglot-ensure)
+         (nix-mode . eglot-ensure))
   :bind ( :map eglot-mode-map
           ("<leader> e r" . eglot-rename)
           ("<leader> e f" . eglot-format)
-          ("<leader> e c" . eglot-code-actions))
-  :config
-  (when (eq system-type 'gnu/linux)
-    (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
-    (add-hook 'nix-mode-hook #'eglot-ensure)))
+          ("<leader> e c" . eglot-code-actions)))
 
 (use-package eldoc-box :hook (eldoc-mode . eldoc-box-hover-at-point-mode))
 
@@ -418,7 +416,8 @@
              :host github
              :repo "idris-community/idris2-mode")
     :hook (idris2-mode . eglot-ensure)
-    :commands idris2-mode))
+    :commands idris2-mode)
+  (use-package nix-mode :mode "\\.nix\\'"))
 
 (use-package poly-markdown)
 
