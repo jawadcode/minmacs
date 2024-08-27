@@ -19,13 +19,24 @@
                           :size 16
                           :weight 'normal
                           :width 'normal))
-(set-fontset-font t
-                  'emoji
-                  (font-spec :family "Noto Color Emoji"
-                             :size 20
-                             :weight 'normal
-                             :width 'normal
-                             :slant 'normal))
+
+(if (eq system-type 'windows-nt)
+    (when (member "Noto Emoji" (font-family-list))
+      (set-fontset-font t
+                        'emoji
+                        (font-spec :family "Noto Emoji"
+                                   :size 20
+                                   :weight 'normal
+                                   :width 'normal
+                                   :slant 'normal)))
+    (when (member "Noto Color Emoji" (font-family-list))
+      (set-fontset-font t
+                        'emoji
+                        (font-spec :family "Noto Color Emoji"
+                                  :size 20
+                                  :weight 'normal
+                                  :width 'normal
+                                  :slant 'normal))))
 
 (add-hook 'text-mode-hook #'display-line-numbers-mode)
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)
@@ -334,10 +345,10 @@
   :straight (:type built-in)
   :custom (eglot-report-progress t)
   :hook (python-mode . eglot-ensure)
-	:bind ( :map eglot-mode-map
-					("<leader> e r" . eglot-rename)
-					("<leader> e f" . eglot-format)
-					("<leader> e c" . eglot-code-actions))
+  :bind ( :map eglot-mode-map
+          ("<leader> e r" . eglot-rename)
+          ("<leader> e f" . eglot-format)
+          ("<leader> e c" . eglot-code-actions))
   :config
   (when (eq system-type 'gnu/linux)
     (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
