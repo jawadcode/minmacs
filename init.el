@@ -45,6 +45,9 @@
 (window-divider-mode)
 (global-hl-line-mode)
 
+(add-hook 'markdown-mode-hook 'variable-pitch-mode)
+(add-hook 'org-mode-hook 'variable-pitch-mode)
+
 ;; === INITIALISE STRAIGHT.EL ===
 
 (defvar bootstrap-version)
@@ -151,6 +154,27 @@
   :bind ( :map centaur-tabs-mode-map
           ("<leader> t n" . centaur-tabs-forward)
           ("<leader> t p" . centaur-tabs-backward)))
+
+(use-package all-the-icons)
+
+(use-package treemacs-all-the-icons
+  ;; :defer t
+  :commands treemacs-all-the-icons)
+
+(use-package treemacs
+  :config
+  ;; (treemacs-load-all-the-icons-with-workaround-font "Hermit")
+  (treemacs-project-follow-mode t)
+  (treemacs-filewatch-mode t)
+  (treemacs-git-mode 'deferred)
+  :bind ("<leader> r" . treemacs))
+
+(use-package treemacs-evil :after (treemacs evil))
+
+(use-package treemacs-icons-dired
+  :hook (dired-mode . treemacs-icons-dired-enable-once))
+
+(use-package treemacs-tab-bar :after treemacs)
 
 (use-package solaire-mode
   :config
@@ -344,8 +368,12 @@
 (use-package eglot
   :straight (:type built-in)
   :custom (eglot-report-progress t)
-  :config (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
+  :config
+  (add-to-list 'eglot-server-programs
+               '(nix-mode . ("nil" :initializationOptions
+                             (:nil (:formatting (:command ["alejandra"]))))))
   :hook ((python-mode . eglot-ensure)
+         (conf-toml-mode . eglot-ensure)
          (nix-mode . eglot-ensure))
   :bind ( :map eglot-mode-map
           ("<leader> e r" . eglot-rename)
@@ -392,6 +420,7 @@
 (use-package typescript-mode
   :init (add-hook 'auto-mode-alist '("\\.mjs\\'" . javascript-mode))
   :hook
+  (js-mode . eglot-ensure)
   (javascript-mode . eglot-ensure)
   (typescript-mode . eglot-ensure)
   :commands (javascript-mode typescript-mode))
