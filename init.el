@@ -16,7 +16,7 @@
                           :slant 'normal))
 (set-face-font 'variable-pitch
                (font-spec :family "Roboto"
-                          :size 16
+                          :size 18
                           :weight 'normal
                           :width 'normal))
 
@@ -33,10 +33,10 @@
       (set-fontset-font t
                         'emoji
                         (font-spec :family "Noto Color Emoji"
-                                  :size 20
-                                  :weight 'normal
-                                  :width 'normal
-                                  :slant 'normal))))
+           :size 20
+                                   :weight 'normal
+                                   :width 'normal
+                                   :slant 'normal))))
 
 (add-hook 'text-mode-hook #'display-line-numbers-mode)
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)
@@ -44,9 +44,6 @@
 
 (window-divider-mode)
 (global-hl-line-mode)
-
-(add-hook 'markdown-mode-hook 'variable-pitch-mode)
-(add-hook 'org-mode-hook 'variable-pitch-mode)
 
 ;; === INITIALISE STRAIGHT.EL ===
 
@@ -66,7 +63,9 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
-(setq use-package-always-ensure t)
+(setq use-package-always-ensure t
+      use-package-compute-statistics t)
+
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
 
@@ -312,7 +311,7 @@
 (setq-default tab-width 4)
 (setq-default evil-shift-width 4)
 
-(electric-pair-mode)
+(electric-pair-mode t)
 
 (defun smol-tabs ()
   (setq tab-width 2)
@@ -426,18 +425,23 @@
   :commands (javascript-mode typescript-mode))
 
 (use-package svelte-mode
-  :hook ((svelte-mode . eglot-ensure)
-         ;; Looks worse with TS, embedded CSS and JS isn't highlighted
-         (svelte-mode . (lambda () (tree-sitter-hl-mode -1))))
+  :hook (svelte-mode . (lambda ()
+                         (tree-sitter-hl-mode -1)
+                         (eglot-ensure)))
   :commands svelte-mode)
 
-(use-package lean4-mode
-  :straight (lean4-mode
-           :host github
-           :repo "bustercopley/lean4-mode"
-           :files ("*.el" "data"))
-  :hook (lean4-mode . eglot-ensure)
-  :commands lean4-mode)
+(use-package nael
+  :straight (nael
+             :host codeberg
+             :repo "mekeor/nael"
+             :files ("*.el" "data"))
+  :init (add-hook 'auto-mode-alist '("\\.lean\\'" . nael-mode))
+  :hook (nael-mode . (lambda ()
+                       (set-input-method "TeX")
+                       (eglot-ensure)))
+  :bind ( :map nael-mode-map
+          ("<leader> k" . quail-show-key))
+  :commands nael-mode)
 
 (when (eq system-type 'gnu/linux)
   (use-package idris2-mode
@@ -448,7 +452,54 @@
     :commands idris2-mode)
   (use-package nix-mode :mode "\\.nix\\'"))
 
-(use-package poly-markdown)
+;; === ORG-MODE ===
+
+(use-package org
+	:straight (:type built-in)
+	:custom (org-hide-emphasis-markers t)
+	:hook (org-mode . variable-pitch-mode)
+	:config
+	(font-lock-add-keywords 'org-mode
+													'(("^ *\\([-]\\) "
+														 (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+	(let* ((variable-tuple
+					(cond ((x-family-fonts "Roboto")    '(:family "Roboto"))
+								(nil (warn "Roboto font missing"))))
+				 (base-font-color     (face-foreground 'default nil 'default))
+				 (headline           `(:inherit default :weight bold :foreground ,base-font-color)))
+
+    (custom-theme-set-faces
+     'user
+     `(org-level-8 ((t (,@headline ,@variable-tuple))))
+     `(org-level-7 ((t (,@headline ,@variable-tuple))))
+     `(org-level-6 ((t (,@headline ,@variable-tuple))))
+     `(org-level-5 ((t (,@headline ,@variable-tuple))))
+     `(org-level-4 ((t (,@headline ,@variable-tuple :height 1.1))))
+     `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.25))))
+     `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.5))))
+     `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.75))))
+     `(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil))))))
+
+  (custom-theme-set-faces
+   'user
+   '(org-block                 ((t (:inherit fixed-pitch))))
+   '(org-code                  ((t (:inherit (shadow fixed-pitch)))))
+   '(org-document-info         ((t (:foreground "dark orange"))))
+   '(org-document-info-keyword ((t (:inherit (shadow fixed-pitch)))))
+   '(org-indent                ((t (:inherit (org-hide fixed-pitch)))))
+   '(org-link                  ((t (:foreground "royal blue" :underline t))))
+   '(org-meta-line             ((t (:inherit (font-lock-comment-face fixed-pitch)))))
+   '(org-property-value        ((t (:inherit fixed-pitch))) t)
+   '(org-special-keyword       ((t (:inherit (font-lock-comment-face fixed-pitch)))))
+   '(org-table                 ((t (:inherit fixed-pitch :foreground "#83a598"))))
+   '(org-tag                   ((t (:inherit (shadow fixed-pitch) :weight bold :height 0.8))))
+   '(org-verbatim              ((t (:inherit (shadow fixed-pitch)))))))
+
+(setq inhibit-compacting-font-caches t)
+
+(use-package org-bullets
+  :config (add-hook 'org-mode-hook
+        #'(lambda () (org-bullets-mode 1))))
 
 ;; === DIRENV (FOR NIX) ===
 
@@ -457,4 +508,4 @@
 (use-package envrc
   :hook (after-init . envrc-global-mode)
   :bind ( :map envrc-mode-map
-          ("<leader>e" . envrc-command-map)))
+          ("<leader> e" . envrc-command-map)))
