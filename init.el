@@ -16,7 +16,7 @@
                           :slant 'normal))
 (set-face-font 'variable-pitch
                (font-spec :family "Roboto"
-                          :size 18
+                          :size 20
                           :weight 'normal
                           :width 'normal))
 
@@ -71,15 +71,27 @@
 
 ;; === CORE PACKAGES ===
 
-(use-package doom-themes
-  :config
-  (setq doom-themes-enable-bold t
-        doom-themes-enable-italic t
-        doom-themes-padded-modeline t)
-  (load-theme 'doom-material-dark t)
-
-  (doom-themes-visual-bell-config)
-  (doom-themes-org-config))
+(use-package standard-themes
+  :custom
+  (standard-themes-bold-constructs t)
+  (standard-themes-italic-constructs t)
+  (standard-themes-disable-other-themes t)
+  (standard-themes-mixed-fonts t)
+  (standard-themes-variable-pitch-ui t)
+  (standard-themes-prompts '(extrabold italic))
+  (standard-themes-headings
+    '((0 . (variable-pitch light 1.9))
+    (1 . (variable-pitch light 1.8))
+    (2 . (variable-pitch light 1.7))
+    (3 . (variable-pitch semilight 1.6))
+    (4 . (variable-pitch semilight 1.5))
+    (5 . (variable-pitch 1.4))
+    (6 . (variable-pitch 1.3))
+    (7 . (variable-pitch 1.2))
+    (agenda-date . (1.3))
+    (agenda-structure . (variable-pitch light 1.8))
+    (t . (variable-pitch 1.1))))
+  :config (standard-themes-load-light))
 
 (use-package mood-line
   :config (mood-line-mode))
@@ -95,10 +107,10 @@
 
 (use-package evil
   :custom
-  (evil-want-integration t)
   (evil-want-keybinding nil)
   (evil-vsplit-window-right t)
   (evil-split-window-below t)
+  (evil-shift-width 4)
   :config
   (evil-set-undo-system 'undo-redo)
   (evil-set-leader 'normal (kbd "SPC"))
@@ -137,8 +149,8 @@
                                dashboard-insert-items))
   (dashboard-items '((recents . 10)
                      (projects . 10)))
+  :hook (special-mode . (lambda () (setq-local centaur-tabs-mode -1)))
   :config
-  (setq-local centaur-tabs-mode -1)
   (dashboard-setup-startup-hook))
 
 (use-package centaur-tabs
@@ -309,7 +321,6 @@
 
 (setq-default indent-tabs-mode -1)
 (setq-default tab-width 4)
-(setq-default evil-shift-width 4)
 
 (electric-pair-mode t)
 
@@ -342,14 +353,11 @@
 
 (use-package company
   :init (setq company-tooltip-align-annotations t)
-  :config
-  (keymap-unset company-active-map "C-n")
-  (keymap-unset company-active-map "C-p")
-  (keymap-unset company-active-map "RET")
-  (keymap-set   company-active-map "M-j"   #'company-select-next)
-  (keymap-set   company-active-map "M-k"   #'company-select-previous)
-  (keymap-set   company-active-map "<tab>" #'company-complete-selection)
-  (global-company-mode))
+  :bind ( :map company-active-map
+          ("M-j"   . #'company-select-next)
+          ("M-k"   . #'company-select-previous)
+          ("<tab>" . #'company-complete-selection))
+  :config (global-company-mode))
 
 (use-package company-box
   :after company
@@ -455,51 +463,9 @@
 ;; === ORG-MODE ===
 
 (use-package org
-	:straight (:type built-in)
-	:custom (org-hide-emphasis-markers t)
-	:hook (org-mode . variable-pitch-mode)
-	:config
-	(font-lock-add-keywords 'org-mode
-													'(("^ *\\([-]\\) "
-														 (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
-	(let* ((variable-tuple
-					(cond ((x-family-fonts "Roboto")    '(:family "Roboto"))
-								(nil (warn "Roboto font missing"))))
-				 (base-font-color     (face-foreground 'default nil 'default))
-				 (headline           `(:inherit default :weight bold :foreground ,base-font-color)))
-
-    (custom-theme-set-faces
-     'user
-     `(org-level-8 ((t (,@headline ,@variable-tuple))))
-     `(org-level-7 ((t (,@headline ,@variable-tuple))))
-     `(org-level-6 ((t (,@headline ,@variable-tuple))))
-     `(org-level-5 ((t (,@headline ,@variable-tuple))))
-     `(org-level-4 ((t (,@headline ,@variable-tuple :height 1.1))))
-     `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.25))))
-     `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.5))))
-     `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.75))))
-     `(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil))))))
-
-  (custom-theme-set-faces
-   'user
-   '(org-block                 ((t (:inherit fixed-pitch))))
-   '(org-code                  ((t (:inherit (shadow fixed-pitch)))))
-   '(org-document-info         ((t (:foreground "dark orange"))))
-   '(org-document-info-keyword ((t (:inherit (shadow fixed-pitch)))))
-   '(org-indent                ((t (:inherit (org-hide fixed-pitch)))))
-   '(org-link                  ((t (:foreground "royal blue" :underline t))))
-   '(org-meta-line             ((t (:inherit (font-lock-comment-face fixed-pitch)))))
-   '(org-property-value        ((t (:inherit fixed-pitch))) t)
-   '(org-special-keyword       ((t (:inherit (font-lock-comment-face fixed-pitch)))))
-   '(org-table                 ((t (:inherit fixed-pitch :foreground "#83a598"))))
-   '(org-tag                   ((t (:inherit (shadow fixed-pitch) :weight bold :height 0.8))))
-   '(org-verbatim              ((t (:inherit (shadow fixed-pitch)))))))
-
-(setq inhibit-compacting-font-caches t)
-
-(use-package org-bullets
-  :config (add-hook 'org-mode-hook
-        #'(lambda () (org-bullets-mode 1))))
+  :straight (:type built-in)
+  :custom (org-hide-emphasis-markers t)
+  :hook (org-mode . variable-pitch-mode))
 
 ;; === DIRENV (FOR NIX) ===
 
