@@ -1,0 +1,16 @@
+;; Initialisation -*- lexical-binding: t; -*-
+
+(load-file "../common/core.el")
+
+;; === LSP & LANGUAGE CONFIGURATIONS ===
+
+(use-package lsp-mode
+	:custom
+	(lsp-keymap-prefix "SPC l")
+	(lsp-enable-which-key-integration t)
+	(lsp-inlay-hint-enable t)
+  :hook ((c-mode   . lsp)
+         (lsp-mode . lsp-enable-which-key-integration)))
+
+(use-package lsp-ui)
+(use-package lsp-ivy)
