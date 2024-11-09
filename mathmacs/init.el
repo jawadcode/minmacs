@@ -1,7 +1,8 @@
 ;; Initialisation -*- lexical-binding: t; -*-
 
 (let ((emacs-dir (file-name-parent-directory user-emacs-directory)))
-  (load-file (concat emacs-dir "common/core.el")))
+  (load (file-name-concat emacs-dir "common/core.el"))
+	(load (file-name-concat emacs-dir "common/rest.el")))
 
 ;; === LSP & LANGUAGE CONFIGURATIONS ===
 

@@ -1,7 +1,8 @@
 ;; Initialisation -*- lexical-binding: t; -*-
 
 (let ((emacs-dir (file-name-parent-directory user-emacs-directory)))
-  (load-file (concat emacs-dir "common/core.el")))
+  (load (file-name-concat emacs-dir "common/core.el"))
+	(load (file-name-concat emacs-dir "common/rest.el")))
 
 ;; === LSP & LANGUAGE CONFIGURATIONS ===
 
@@ -20,7 +21,8 @@
           ("<leader> l f" . eglot-format)
           ("<leader> l c" . eglot-code-actions)))
 
-(use-package eldoc-box :hook (eldoc-mode . eldoc-box-hover-at-point-mode))
+(use-package eldoc-box
+  :hook (eldoc-mode . eldoc-box-hover-at-point-mode))
 
 (defun smol-tabs ()
   (setq tab-width 2)
