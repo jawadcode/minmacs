@@ -1,8 +1,9 @@
 ;; Initialisation -*- lexical-binding: t; -*-
 
-(let ((emacs-dir (file-name-parent-directory user-emacs-directory)))
-  (load (file-name-concat emacs-dir "common/core.el"))
-	(load (file-name-concat emacs-dir "common/rest.el")))
+(setq emacs-dir (file-name-parent-directory user-emacs-directory))
+
+(load (file-name-concat emacs-dir "common/core.el"))
+(load (file-name-concat emacs-dir "common/rest.el"))
 
 ;; === LSP & LANGUAGE CONFIGURATIONS ===
 
@@ -82,9 +83,10 @@
 (when (eq system-type 'gnu/linux)
   (use-package idris2-mode
     :straight (idris2-mode
-             :host github
-             :repo "idris-community/idris2-mode")
+							 :host github
+							 :repo "idris-community/idris2-mode")
     :hook (idris2-mode . eglot-ensure)
     :commands idris2-mode)
   (use-package nix-mode :mode "\\.nix\\'"))
 
+(load (file-name-concat emacs-dir "common/load-env-vars.el"))

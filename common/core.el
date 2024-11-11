@@ -29,14 +29,14 @@
 																	 :weight 'normal
 																	 :width 'normal
 																	 :slant 'normal)))
-	  (when (member "Noto Color Emoji" (font-family-list))
-			(set-fontset-font t
-												'emoji
-												(font-spec :family "Noto Color Emoji"
-																	:size 18
-																	:weight 'normal
-																	:width 'normal
-																	:slant 'normal))))
+	(when (member "Noto Color Emoji" (font-family-list))
+		(set-fontset-font t
+											'emoji
+											(font-spec :family "Noto Color Emoji"
+																 :size 18
+																 :weight 'normal
+																 :width 'normal
+																 :slant 'normal))))
 
 (add-hook 'text-mode-hook #'display-line-numbers-mode)
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)

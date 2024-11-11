@@ -28,42 +28,9 @@
   (which-key-allow-evil-operator t)
   :config (which-key-mode 1))
 
-;; === SETTING UP THE PATH/ENVIRONMENT (WINDOWS ONLY) ===
-
-(setq env-file-path (file-name-concat (getenv "USERPROFILE") "env.el"))
-
-(when (eq system-type 'windows-nt)
-  (setq explicit-shell-file-name
-        (seq-some (lambda (x) (if (file-exists-p x) x nil))
-                  (list "C:/Program Files/PowerShell/7/pwsh.exe")))
-
-  (defun load-env-file (file)
-    "Read and set envvars from FILE."
-    (if (null (file-exists-p file))
-        (signal 'file-error
-                (list "No envvar file exists." file
-                      "Run `emacs --script ~/.emacs.d/scripts/gen-env-file.el`."))
-      (with-temp-buffer
-        (insert-file-contents file)
-        (when-let (env (read (current-buffer)))
-          (let ((tz (getenv-internal "TZ")))
-            (setq-default
-             process-environment
-             (append env (default-value 'process-environment))
-             exec-path
-             (append (split-string (getenv "PATH") path-separator t)
-                     (list exec-directory))
-             shell-file-name
-             (or (getenv "SHELL")
-                 (default-value 'shell-file-name)))
-            (when-let (newtz (getenv-internal "TZ"))
-              (unless (equal tz newtz)
-                (set-time-zone-rule newtz))))
-          env))))
-
-  (load-env-file env-file-path))
-
 ;; === PROGRAMS ===
+
+(use-package all-the-icons)
 
 (use-package dashboard
   :init (setq initial-buffer-choice 'dashboard-open)
@@ -81,7 +48,6 @@
                                dashboard-insert-items))
   (dashboard-items '((recents . 10)
                      (projects . 10)))
-  :hook (special-mode . (lambda () (setq-local centaur-tabs-mode -1)))
   :config
   (dashboard-setup-startup-hook))
 
@@ -90,22 +56,19 @@
   (centaur-tabs-style "bar")
   (centaur-tabs-set-bar 'over)
   (centaur-tabs-cycle-scope 'tabs)
-  :config
-  (centaur-tabs-change-fonts (face-attribute 'variable-pitch :font) 160)
-  (centaur-tabs-mode 1)
   :hook (dashboard-mode . centaur-tabs-local-mode)
   :bind ( :map centaur-tabs-mode-map
           ("<leader> t n" . centaur-tabs-forward)
-          ("<leader> t p" . centaur-tabs-backward)))
-
-(use-package all-the-icons)
+          ("<leader> t p" . centaur-tabs-backward))
+  :config
+  (centaur-tabs-change-fonts "Roboto" 140)
+  (centaur-tabs-mode 1))
 
 (use-package treemacs-all-the-icons
   :commands treemacs-all-the-icons)
 
 (use-package treemacs
   :config
-  ;; (treemacs-load-all-the-icons-with-workaround-font "Hermit")
   (treemacs-project-follow-mode t)
   (treemacs-filewatch-mode t)
   (treemacs-git-mode 'deferred)
