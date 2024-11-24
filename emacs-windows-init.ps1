@@ -12,4 +12,4 @@ New-Item "$env:USERPROFILE\.emacs.d\codemacs\init.el" -ItemType SymbolicLink -Ta
 New-Item "$env:USERPROFILE\.emacs.d\mathmacs\early-init.el" -ItemType SymbolicLink -Target "$(Get-Location)\mathmacs\early-init.el"
 New-Item "$env:USERPROFILE\.emacs.d\mathmacs\init.el" -ItemType SymbolicLink -Target "$(Get-Location)\mathmacs\init.el"
 
-emacs.exe --quick --script .\gen-env-file.el
+emacs.exe --no-init-file --load .\gen-env-file.el
