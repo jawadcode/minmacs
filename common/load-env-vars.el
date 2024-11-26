@@ -1,6 +1,6 @@
-																				; Setting up the environment -*- lexical-binding: t; -*-
+; Setting up the environment -*- lexical-binding: t; -*-
 
-(setq env-file-path (file-name-concat (getenv "USERPROFILE") "env.el"))
+(setq env-file-path (file-name-concat (getenv "HOME") "env.el"))
 
 (when (eq system-type 'windows-nt)
   (setq explicit-shell-file-name

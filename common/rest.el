@@ -2,9 +2,10 @@
 
 ;; === EVIL MODE + WHICH-KEY ===
 
+(setq evil-want-keybinding nil)
+
 (use-package evil
   :custom
-  (evil-want-keybinding nil)
   (evil-vsplit-window-right t)
   (evil-split-window-below t)
   (evil-shift-width 4)
@@ -170,7 +171,7 @@
 
 (use-package tree-sitter-langs)
 
-(setq default-directory (f-slash (getenv "USERPROFILE")))
+(setq default-directory (f-slash (getenv "HOME")))
 (setq backup-directory-alist `((".*" . ,temporary-file-directory)))
 (setq custom-file (f-join user-emacs-directory "custom.el"))
 
@@ -228,3 +229,47 @@
     :hook (after-init . envrc-global-mode)
     :bind ( :map envrc-mode-map
             ("<leader> e" . envrc-command-map))))
+
+;; === LSP-MODE (EGLOT IS A PAIN IN THE ARSE) ===
+
+(use-package lsp-mode
+	:custom
+	(lsp-enable-which-key-integration t)
+	(lsp-inlay-hint-enable t)
+	:hook (lsp-mode . lsp-enable-which-key-integration)
+	:config
+	(defun lsp-booster--advice-json-parse (old-fn &rest args)
+		"Try to parse bytecode instead of json."
+		(or
+		 (when (equal (following-char) ?#)
+			 (let ((bytecode (read (current-buffer))))
+				 (when (byte-code-function-p bytecode)
+					 (funcall bytecode))))
+		 (apply old-fn args)))
+	(advice-add (if (progn (require 'json)
+												 (fboundp 'json-parse-buffer))
+									'json-parse-buffer
+								'json-read)
+							:around
+							#'lsp-booster--advice-json-parse)
+
+  (defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+		"Prepend emacs-lsp-booster command to lsp CMD."
+		(let ((orig-result (funcall old-fn cmd test?)))
+			(if (and (not test?)                             ;; for check lsp-server-present?
+							 (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+							 lsp-use-plists
+							 (not (functionp 'json-rpc-connection))  ;; native json-rpc
+							 (executable-find "emacs-lsp-booster"))
+					(progn
+						(when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
+							(setcar orig-result command-from-exec-path))
+						(message "Using emacs-lsp-booster for %s!" orig-result)
+						(cons "emacs-lsp-booster" orig-result))
+				orig-result)))
+  (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
+  (evil-define-key 'normal lsp-mode-map (kbd "SPC l") lsp-command-map)
+	:commands (lsp lsp-deferred))
+
+(use-package lsp-ui)
+(use-package lsp-ivy)
