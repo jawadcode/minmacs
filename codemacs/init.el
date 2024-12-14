@@ -24,16 +24,21 @@
 (add-hook 'c-mode-hook   #'c/++-setup)
 (add-hook 'c++-mode-hook #'c/++-setup)
 
+(use-package lsp-pyright
+	:hook (python-mode . lsp-deferred))
+
 (use-package tuareg
   :hook ((tuareg-mode . lsp-deferred)
          (tuareg-mode . prettify-symbols-mode)
          (tuareg-mode . (lambda () (setq tuareg-mode-name "🐫"))))
   :commands tuareg-mode)
 
-(use-package haskell-mode
-  :hook ((haskell-mode . lsp-deferred)
-         (haskell-literate-mode . lsp-deferred)
-         (haskell-mode . smol-tabs))
+(use-package lsp-haskell
+  :hook ((haskell-mode . (lambda ()
+													 (setq-local ligature-mode nil)
+													 (smol-tabs)
+													 (lsp-deferred)))
+				 (haskell-literate-mode . lsp-deferred))
   :commands (haskell-mode haskell-literate-mode))
 
 (use-package glsl-mode
@@ -65,10 +70,14 @@
 (when (eq system-type 'gnu/linux)
   (use-package idris2-mode
     :straight (idris2-mode
-							 :host github
-							 :repo "idris-community/idris2-mode")
+               :host github
+               :repo "idris-community/idris2-mode")
     :hook (idris2-mode . lsp-deferred)
     :commands idris2-mode)
-  (use-package nix-mode :mode "\\.nix\\'"))
+  (use-package nix-mode
+    :mode "\\.nix\\'"
+    :hook (nix-mode . (lambda ()
+                        (setq lsp-nix-nil-formatter ["alejandra" "-"])
+                        (lsp-deferred)))))
 
 (load (file-name-concat emacs-dir "common/load-env-vars.el"))
